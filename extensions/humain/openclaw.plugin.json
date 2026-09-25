@@ -1,0 +1,64 @@
+{
+  "id": "humain",
+  "categories": ["models"],
+  "activation": {
+    "onStartup": false
+  },
+  "enabledByDefault": true,
+  "providers": ["humain"],
+  "providerEndpoints": [
+    {
+      "endpointClass": "humain-native",
+      "hosts": ["api.node.humain.com"]
+    }
+  ],
+  "providerRequest": {
+    "providers": {
+      "humain": {
+        "family": "humain"
+      }
+    }
+  },
+  "modelCatalog": {
+    "discovery": {
+      "humain": "runtime"
+    }
+  },
+  "modelPricing": {
+    "providers": {
+      "humain": {
+        "external": false
+      }
+    }
+  },
+  "setup": {
+    "providers": [
+      {
+        "id": "humain",
+        "envVars": ["HUMAIN_NODE_API_KEY"]
+      }
+    ]
+  },
+  "providerAuthChoices": [
+    {
+      "provider": "humain",
+      "method": "api-key",
+      "choiceId": "humain-api-key",
+      "appGuidedSecret": true,
+      "choiceLabel": "HUMAIN Node API key",
+      "choiceHint": "OpenAI-compatible AI access platform from HUMAIN",
+      "groupId": "humain",
+      "groupLabel": "HUMAIN Node",
+      "groupHint": "Interactive playground + OpenAI-compatible API",
+      "optionKey": "humainApiKey",
+      "cliFlag": "--humain-api-key",
+      "cliOption": "--humain-api-key <key>",
+      "cliDescription": "HUMAIN Node API key"
+    }
+  ],
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {}
+  }
+}
