@@ -4,7 +4,11 @@
 import { defineSingleProviderPluginEntry } from "openclaw/plugin-sdk/provider-entry";
 import { applyHumainConfig } from "./onboard.js";
 import manifest from "./openclaw.plugin.json" with { type: "json" };
-import { buildHumainProvider, HUMAIN_MODEL_DISCOVERY } from "./provider-catalog.js";
+import {
+  buildHumainProvider,
+  HUMAIN_MODEL_DISCOVERY,
+  resolveHumainStarterModel,
+} from "./provider-catalog.js";
 
 const PROVIDER_ID = "humain";
 
@@ -18,6 +22,21 @@ export default defineSingleProviderPluginEntry({
     docsPath: "/providers/humain",
     manifestAuth: {
       applyConfig: applyHumainConfig,
+      // No fixed default model exists (see provider-catalog.ts), so onboarding
+      // would otherwise have nothing to run its post-auth verification turn
+      // against. Ask this key's own live catalog for a starter model instead.
+      resolveDefaultModel: async ({ apiKey, config, signal }) => {
+        const existingProvider = config.models?.providers?.humain as
+          | { baseUrl?: unknown }
+          | undefined;
+        const baseUrl =
+          typeof existingProvider?.baseUrl === "string" ? existingProvider.baseUrl : undefined;
+        return await resolveHumainStarterModel({
+          apiKey,
+          ...(baseUrl ? { baseUrl } : {}),
+          ...(signal ? { signal } : {}),
+        });
+      },
       noteMessage: [
         "HUMAIN Node is HUMAIN's AI access platform: an interactive playground",
         "plus an OpenAI-compatible API brokering multiple providers/models.",

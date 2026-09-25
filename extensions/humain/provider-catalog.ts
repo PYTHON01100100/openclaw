@@ -1,5 +1,8 @@
 // HUMAIN Node provider module implements model/runtime integration.
-import type { OpenAICompatibleModelDiscoveryOptions } from "openclaw/plugin-sdk/provider-catalog-live-runtime";
+import {
+  fetchLiveProviderModelRows,
+  type OpenAICompatibleModelDiscoveryOptions,
+} from "openclaw/plugin-sdk/provider-catalog-live-runtime";
 import type {
   ModelDefinitionConfig,
   ModelProviderConfig,
@@ -21,7 +24,7 @@ export const HUMAIN_BASE_URL = "https://api.node.humain.com/v1";
  * against, and no per-model pricing is published by the endpoint, so cost
  * stays at the shared "unknown price" placeholder rather than a guess.
  */
-function projectHumainModels(rows: readonly unknown[]): ModelDefinitionConfig[] {
+export function projectHumainModels(rows: readonly unknown[]): ModelDefinitionConfig[] {
   const models = new Map<string, ModelDefinitionConfig>();
   for (const row of rows) {
     const record = asOptionalRecord(row);
@@ -68,4 +71,28 @@ export const HUMAIN_MODEL_DISCOVERY: OpenAICompatibleModelDiscoveryOptions = {
 /** Builds the HUMAIN Node OpenAI-compatible provider config with no bundled static models. */
 export function buildHumainProvider(): ModelProviderConfig {
   return { baseUrl: HUMAIN_BASE_URL, api: "openai-completions", models: [] };
+}
+
+/**
+ * Resolves a starter model ref right after a HUMAIN Node key is captured, by
+ * calling the same `GET /models` this key will use for real inference. There
+ * is no fixed default to fall back on (see {@link buildHumainProvider}), so
+ * onboarding needs this to have a model to run its first verification turn
+ * against. Returns `undefined` when the key has no available models yet.
+ */
+export async function resolveHumainStarterModel(params: {
+  apiKey: string;
+  baseUrl?: string;
+  signal?: AbortSignal;
+}): Promise<string | undefined> {
+  const baseUrl = (params.baseUrl?.trim() || HUMAIN_BASE_URL).replace(/\/+$/, "");
+  const rows = await fetchLiveProviderModelRows({
+    providerId: "humain",
+    endpoint: `${baseUrl}/models`,
+    discoveryApiKey: params.apiKey,
+    requireHttps: true,
+    ...(params.signal ? { signal: params.signal } : {}),
+  });
+  const [model] = projectHumainModels(rows);
+  return model ? `humain/${model.id}` : undefined;
 }

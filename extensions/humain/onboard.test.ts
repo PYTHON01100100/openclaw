@@ -5,8 +5,10 @@ import {
 } from "openclaw/plugin-sdk/provider-catalog-live-runtime";
 import type { ProviderPlugin } from "openclaw/plugin-sdk/provider-model-shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { createRuntimeSpies } from "../test-support/runtime-spies.js";
 import { applyHumainConfig } from "./onboard.js";
 import plugin from "./index.js";
+import { resolveHumainStarterModel } from "./provider-catalog.js";
 
 const ssrfRuntimeMocks = vi.hoisted(() => ({
   fetchWithSsrFGuard: vi.fn<LiveModelCatalogFetchGuard>(),
@@ -76,6 +78,61 @@ beforeEach(() => {
 afterEach(() => {
   clearLiveCatalogCacheForTests();
   ssrfRuntimeMocks.fetchWithSsrFGuard.mockReset();
+});
+
+describe("HUMAIN Node starter model resolution", () => {
+  it("resolves a live model as a starter ref, deterministically by id", async () => {
+    mockCatalogResponse({
+      data: [NATIVE_TEXT_MODEL, { ...NATIVE_TEXT_MODEL, id: "fixture-earlier-model" }],
+    });
+
+    await expect(resolveHumainStarterModel({ apiKey: "fixture-humain-key" })).resolves.toBe(
+      "humain/fixture-earlier-model",
+    );
+  });
+
+  it("respects a configured custom base URL", async () => {
+    mockCatalogResponse({ data: [NATIVE_TEXT_MODEL] });
+
+    await resolveHumainStarterModel({
+      apiKey: "fixture-humain-key",
+      baseUrl: "https://proxy.example.test/humain/v1",
+    });
+
+    expect(ssrfRuntimeMocks.fetchWithSsrFGuard.mock.calls[0]?.[0]?.url).toBe(
+      "https://proxy.example.test/humain/v1/models",
+    );
+  });
+
+  it("returns undefined when the key has no available models", async () => {
+    mockCatalogResponse({ data: [] });
+
+    await expect(
+      resolveHumainStarterModel({ apiKey: "fixture-humain-key" }),
+    ).resolves.toBeUndefined();
+  });
+
+  it("completes non-interactive setup by picking a live starter model", async () => {
+    mockCatalogResponse({ data: [NATIVE_TEXT_MODEL] });
+    const provider = await registerSingleProviderPlugin(plugin);
+    const method = provider.auth?.[0];
+    if (!method?.runNonInteractive) {
+      throw new Error("expected HUMAIN Node non-interactive auth method");
+    }
+
+    const config = {};
+    const result = await method.runNonInteractive({
+      authChoice: "humain-api-key",
+      config,
+      baseConfig: config,
+      opts: {},
+      runtime: createRuntimeSpies(),
+      resolveApiKey: vi.fn(async () => ({ key: "fixture-humain-key", source: "profile" as const })),
+      toApiKeyCredential: vi.fn(() => null),
+    });
+
+    expect(result?.agents?.defaults?.model).toEqual({ primary: "humain/fixture-text-model" });
+  });
 });
 
 describe("HUMAIN Node failover classification", () => {
