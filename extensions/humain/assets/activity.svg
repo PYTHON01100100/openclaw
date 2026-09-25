@@ -1,3 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-  <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 15v5h5M15 4h5v5M4 20 20 4M4 4h5M4 4v5M20 15v5h-5" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-26 -23.4 584 460">
+<!--
+Cropped from the official HUMAIN wordmark (the leading "H" letterform only).
+Source: https://commons.wikimedia.org/wiki/File:HUMAIN.svg
+(https://upload.wikimedia.org/wikipedia/commons/f/fc/HUMAIN.svg), from humain.ai.
+
+Public domain per Wikimedia Commons (simple geometric shapes/text lack the
+originality required for copyright); the HUMAIN name and mark remain HUMAIN's
+property and identify this integration only, not a claim of trademark rights.
+-->
+  <path fill="currentColor" fill-rule="evenodd" stroke="none" d="m0 206.6v204h44 44v-43-43h178 178v43 43h44 44v-204-204h-44-44v42 42h-178-178v-42-42h-44-44zm443.6-0.6l0.4 44.6h-178-178v-43.6c0-24 0.6-44.4 1.4-45 0.6-0.8 80.6-1.2 177.4-1l176.2 0.6z"/>
 </svg>

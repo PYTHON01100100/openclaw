@@ -123,6 +123,8 @@ FaceTime reuses the existing [Voice Call phone glyph](voice-call/assets/activity
 
 QuickJS Code Mode reuses the existing [mxc sandbox glyph](mxc/assets/activity.svg) byte-for-byte for its isolated executor.
 
+HUMAIN's [activity glyph](humain/assets/activity.svg) crops the leading "H" letterform straight out of the same official HUMAIN wordmark used for its [package icon](ICON_SOURCES.md), rather than a generic capability glyph, since no separate icon-only mark exists to draw from.
+
 Other defaults are OpenClaw functional glyphs drawn for the 24-unit activity grid. They indicate the capability rather than reproducing a service’s larger app tile. Related actions deliberately share a visual family:
 
 | Capability              | Plugins                                                                                                          |
